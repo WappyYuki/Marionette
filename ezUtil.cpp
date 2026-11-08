@@ -42,7 +42,7 @@ void ezUtil_makeStars( int n, float range )
     return;
 }
 //-------------------------------------------------------------------- drawStars
-/* drawStars: ¯‚ğ•`‰æ‚·‚é
+/* drawStars: æ˜Ÿã‚’æç”»ã™ã‚‹
  */
 void ezUtil_drawStars( void )
 {
@@ -54,15 +54,15 @@ void ezUtil_drawStars( void )
 }
 //======================================================================= ezFont
 //------------------------------------------------------------------- makeBitmap
-/* makeFonts: ƒtƒHƒ“ƒgƒIƒuƒWƒFƒNƒg‚ğ€”õ‚·‚é
+/* makeFonts: ãƒ•ã‚©ãƒ³ãƒˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æº–å‚™ã™ã‚‹
  */
 GLuint ezFont_makeBitmap( void )
 {
     int i, n;
 
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-    _base = glGenLists(0x80);//ƒfƒBƒXƒvƒŒƒCƒŠƒXƒg—Ìˆæ‚ğ 128 ŒÂŠl“¾
-    //Še•¶š‚Ìƒrƒbƒgƒ}ƒbƒvƒf[ƒ^‚ğŠeƒfƒBƒXƒvƒŒƒCƒŠƒXƒg‚ÉŠ„‚è“–‚Ä‚é
+    _base = glGenLists(0x80);//ãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤ãƒªã‚¹ãƒˆé ˜åŸŸã‚’ 128 å€‹ç²å¾—
+    //å„æ–‡å­—ã®ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ãƒ‡ãƒ¼ã‚¿ã‚’å„ãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤ãƒªã‚¹ãƒˆã«å‰²ã‚Šå½“ã¦ã‚‹
     n = 0;
     for( i = 0x20; i < 0x80; i++ ){
         glNewList( _base + i, GL_COMPILE );
@@ -72,53 +72,21 @@ GLuint ezFont_makeBitmap( void )
     return _base;
 }
 //------------------------------------------------------------------- drawBitmap
-/* drawBitmap: ƒrƒbƒgƒ}ƒbƒvƒtƒHƒ“ƒg‚Å•¶š—ñ‚ğ•`‰æ‚·‚é
+/* drawBitmap: ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ãƒ•ã‚©ãƒ³ãƒˆã§æ–‡å­—åˆ—ã‚’æç”»ã™ã‚‹
  */
 void ezFont_drawBitmap( float x, float y, char *string )
 {
     glPushAttrib( GL_LIST_BIT|GL_CURRENT_BIT );
-    glRasterPos2f( x, y );//•`‰æˆÊ’u‚Ìİ’è
-    //•¶šƒtƒHƒ“ƒgƒfƒBƒXƒvƒŒƒCƒŠƒXƒg‚ÌŠJnˆÊ’u */
+    glRasterPos2f( x, y );//æç”»ä½ç½®ã®è¨­å®š
+    //æ–‡å­—ãƒ•ã‚©ãƒ³ãƒˆãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤ãƒªã‚¹ãƒˆã®é–‹å§‹ä½ç½® */
     glListBase( _base );
-    //ƒfƒBƒXƒvƒŒƒCƒŠƒXƒg (•¶š—ñ) ‚ğ•`‰æ
+    //ãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤ãƒªã‚¹ãƒˆ (æ–‡å­—åˆ—) ã‚’æç”»
     glCallLists( strlen( string ), GL_UNSIGNED_BYTE, (unsigned char *)string );
     glPopAttrib();
     return;
 }
-//--------------------------------------------------------------- drawGlutBitmap
-/* drawGlutBitmap: glutƒrƒbƒgƒ}ƒbƒvƒtƒHƒ“ƒg‚Å•¶š—ñ‚ğ•`‰æ‚·‚é
- */
-void ezFont_drawGlutBitmap( float x, float y, char *string, void *font )
-{
-    glPushAttrib( GL_CURRENT_BIT );//Œ»İ‚Ìƒ‰ƒXƒ^[ƒ|ƒWƒVƒ‡ƒ“‚Ì•Û‘¶
-    glRasterPos2f( x, y );
-    //ƒrƒbƒgƒ}ƒbƒv•¶š—ñ‚Ì•`‰æ
-    while( *string ){
-        glutBitmapCharacter( font, *string++ );
-    }
-    glPopAttrib();//•Û‘¶‚µ‚½ƒ‰ƒXƒ^[ƒ|ƒWƒVƒ‡ƒ“‚Ìƒ[ƒh
-    return;
-}
-//--------------------------------------------------------------- drawGlutStroke
-/* drawGlutStroke
- */
-void ezFont_drawGlutStroke( float x, float y, char *string, void *font,
-                            float xscl, float yscl )
-{
-    glPushMatrix();
-    {
-        glTranslatef( x, y, 0.0 );
-        glScalef( 0.01 * xscl, 0.01 * yscl, 1.0 );
-        //ƒXƒgƒ[ƒNƒtƒHƒ“ƒg•¶š—ñ‚Ì•`‰æ
-        while( *string ){
-            glutStrokeCharacter( font, *string++ );
-        }
-    }
-    glPopMatrix();
-    return;
-}
 //--------------------------------------------------------------------- drawGrid
-/* drawGrid: ƒOƒŠƒbƒh‚ğ•`‰æ‚·‚é
+/* drawGrid: ã‚°ãƒªãƒƒãƒ‰ã‚’æç”»ã™ã‚‹
  */
 void ezUtil_drawGrid( int n, float range )
 {
@@ -147,23 +115,23 @@ void ezUtil_drawGrid( int n, float range )
     return;
 }
 //--------------------------------------------------------------------- drawAxes
-/* drawAxes: À•W²‚ğ•`‰æ‚·‚é
+/* drawAxes: åº§æ¨™è»¸ã‚’æç”»ã™ã‚‹
  */  
 void ezUtil_drawAxes( float l )
 {
-    /* x²‚ğÔ‚Å•`‰æ‚·‚é */
+    /* xè»¸ã‚’èµ¤ã§æç”»ã™ã‚‹ */
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
     glVertex3f(-l, 0.001, 0.0 );
     glVertex3f( l, 0.001, 0.0 );
     glEnd();
-    /* y²‚ğ—Î‚Å•`‰æ‚·‚é */
+    /* yè»¸ã‚’ç·‘ã§æç”»ã™ã‚‹ */
     glColor3f(0.0, 1.0, 0.0); 
     glBegin(GL_LINES);
     glVertex3f( 0.0, l, 0.0 );
     glVertex3f( 0.0,-l, 0.0 );
     glEnd();
-    /* z²‚ğÂ‚Å•`‰æ‚·‚é */
+    /* zè»¸ã‚’é’ã§æç”»ã™ã‚‹ */
     glColor3f(0.0, 0.0, 1.0); 
     glBegin(GL_LINES);
     glVertex3f( 0.0, 0.001, l );
@@ -242,9 +210,9 @@ void ezUtil_getRot( const float src[],
  */
 void ezUtil_getPos( const float matrix[], float *x, float *y, float *z )
 {
-    *x = matrix[12];//[3][0]; xÀ•W’l‚ğ’Šo
-    *y = matrix[13];//[3][1]; yÀ•W’l‚ğ’Šo
-    *z = matrix[14];//[3][2]; zÀ•W’l‚ğ’Šo
+    *x = matrix[12];//[3][0]; xåº§æ¨™å€¤ã‚’æŠ½å‡º
+    *y = matrix[13];//[3][1]; yåº§æ¨™å€¤ã‚’æŠ½å‡º
+    *z = matrix[14];//[3][2]; zåº§æ¨™å€¤ã‚’æŠ½å‡º
     return;
 }
 //======================================================================== ezTex
@@ -253,24 +221,24 @@ void ezUtil_getPos( const float matrix[], float *x, float *y, float *z )
  */
 GLuint ezTex_loadTexture( const char *file, int width, int height, int depth )
 {
-    GLuint tex;                         //ƒeƒNƒXƒ`ƒƒƒnƒ“ƒhƒ‹
-    GLubyte *texture;                   //ƒeƒNƒXƒ`ƒƒ—p‰æ‘œƒf[ƒ^‚Ì”z—ñ
+    GLuint tex;                         //ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒ³ãƒ‰ãƒ«
+    GLubyte *texture;                   //ãƒ†ã‚¯ã‚¹ãƒãƒ£ç”¨ç”»åƒãƒ‡ãƒ¼ã‚¿ã®é…åˆ—
     texture = (GLubyte *)malloc( width * height * depth );
-    FILE *fptex;                        //ƒeƒNƒXƒ`ƒƒƒtƒ@ƒCƒ‹—pƒtƒ@ƒCƒ‹ƒ|ƒCƒ“ƒ^
-    fptex = fopen( file, "rb" );        //ƒoƒCƒiƒŠ“Ç‚İ‚İƒ‚[ƒh‚ÅƒI[ƒvƒ“
-    if( fptex == NULL ){                //ƒtƒ@ƒCƒ‹‚ª“Ç‚ß‚È‚©‚Á‚½‚çƒGƒ‰[
+    FILE *fptex;                        //ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ•ã‚¡ã‚¤ãƒ«ç”¨ãƒ•ã‚¡ã‚¤ãƒ«ãƒã‚¤ãƒ³ã‚¿
+    fptex = fopen( file, "rb" );        //ãƒã‚¤ãƒŠãƒªèª­ã¿è¾¼ã¿ãƒ¢ãƒ¼ãƒ‰ã§ã‚ªãƒ¼ãƒ—ãƒ³
+    if( fptex == NULL ){                //ãƒ•ã‚¡ã‚¤ãƒ«ãŒèª­ã‚ãªã‹ã£ãŸã‚‰ã‚¨ãƒ©ãƒ¼
         perror( file );
         exit( -1 );
     }
-    //ƒeƒNƒXƒ`ƒƒƒf[ƒ^‚ğ“Ç‚İ‚Ş
+    //ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€
     fread( texture, width * height * depth, 1, fptex );
     fclose( fptex );
 
-    glGenTextures( 1, &tex );            //V‚µ‚¢ƒeƒNƒXƒ`ƒƒ‚ğ¶¬‚µ
-    glBindTexture( GL_TEXTURE_2D, tex ); //ƒJƒŒƒ“ƒg‚Éİ’è‚·‚é
-    //¡¡¡¡‰æ‘œƒf[ƒ^‚ğƒeƒNƒXƒ`ƒƒƒƒ‚ƒŠ‚É“o˜^‚·‚é
-    //¡ƒƒ‚ƒŠ‚ÌƒeƒNƒZƒ‹‹«ŠE‚Ìw’è
-    //¡ƒeƒNƒXƒ`ƒƒƒƒ‚ƒŠ‚É“o˜^
+    glGenTextures( 1, &tex );            //æ–°ã—ã„ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ç”Ÿæˆã—
+    glBindTexture( GL_TEXTURE_2D, tex ); //ã‚«ãƒ¬ãƒ³ãƒˆã«è¨­å®šã™ã‚‹
+    //â– â– â– â– ç”»åƒãƒ‡ãƒ¼ã‚¿ã‚’ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ¡ãƒ¢ãƒªã«ç™»éŒ²ã™ã‚‹
+    //â– ãƒ¡ãƒ¢ãƒªã®ãƒ†ã‚¯ã‚»ãƒ«å¢ƒç•Œã®æŒ‡å®š
+    //â– ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ¡ãƒ¢ãƒªã«ç™»éŒ²
     switch( depth ){
       case 3:
         glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
@@ -285,8 +253,8 @@ GLuint ezTex_loadTexture( const char *file, int width, int height, int depth )
       default:
         break;
     }
-    //¡¡¡¡ŠeíƒeƒNƒXƒ`ƒƒƒ‚[ƒhİ’è
-    //¡ƒeƒNƒXƒ`ƒƒƒtƒBƒ‹ƒ^[
+    //â– â– â– â– å„ç¨®ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ¢ãƒ¼ãƒ‰è¨­å®š
+    //â– ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     return tex;
@@ -331,11 +299,11 @@ void ezTex_bind( GLuint tex )
 //----------------------------------------------------------------------- enable
 void ezTex_enable( void )
 {
-    glEnable( GL_TEXTURE_2D ); /*¡ƒeƒNƒXƒ`ƒƒ“K—pŠJn*/
+    glEnable( GL_TEXTURE_2D ); /*â– ãƒ†ã‚¯ã‚¹ãƒãƒ£é©ç”¨é–‹å§‹*/
 }
 //---------------------------------------------------------------------- disable
 void ezTex_disable( void )
 {
-    glDisable( GL_TEXTURE_2D ); /*¡ƒeƒNƒXƒ`ƒƒ“K—pŠJn*/
+    glDisable( GL_TEXTURE_2D ); /*â– ãƒ†ã‚¯ã‚¹ãƒãƒ£é©ç”¨é–‹å§‹*/
 }
 //==============================================================================

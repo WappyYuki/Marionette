@@ -1,0 +1,6 @@
+root = true
+
+# ソースは UTF-8（BOM なし）・CRLF で保存する
+[*.{cpp,h}]
+charset = utf-8
+end_of_line = crlf

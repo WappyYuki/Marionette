@@ -1,31 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "common.h"
-#include <GL/GLUT.h>
-#include <math.h> //”ŠwŠÖ”—pƒwƒbƒ_ƒtƒ@ƒCƒ‹
+#include "balloon.h"
+#include <Windows.h>
+#include <math.h> //æ•°å­¦é–¢æ•°ç”¨ãƒ˜ãƒƒãƒ€ãƒ•ã‚¡ã‚¤ãƒ«
 
 SimDataT simdata;
-BalloonDataT balloondata;
+BalloonSet *balloons = nullptr; // memsys ã®å¸¸é§é ˜åŸŸã«ç¢ºä¿ã—ãŸé¢¨èˆ¹
 extern int time;
 
 
 
-/*-------- —”ƒV[ƒh‚ğ‰Šú‰»‚·‚é
+/*-------- ä¹±æ•°ã‚·ãƒ¼ãƒ‰ã‚’åˆæœŸåŒ–ã™ã‚‹
 *
 */
 void initRandom( void )
 {
-	srand( (unsigned int)glutGet( GLUT_ELAPSED_TIME ) );
+	srand( (unsigned int)GetTickCount64() );
 }
 
-/*-------- —”¶¬ŠÖ”
-* Å¬’lrmin‚ÆÅ‘å’lrmax‚ÌŠÔ‚Ì’l‚ğƒ‰ƒ“ƒ_ƒ€‚É•Ô‚·
+/*-------- ä¹±æ•°ç”Ÿæˆé–¢æ•°
+* æœ€å°å€¤rminã¨æœ€å¤§å€¤rmaxã®é–“ã®å€¤ã‚’ãƒ©ãƒ³ãƒ€ãƒ ã«è¿”ã™
 */
 float Random( float rmin, float rmax ){
 	double r;
 	r = (double)rand()/(double)RAND_MAX;
 	r = r * ( rmax - rmin ) + rmin;
-	return r;
+	return static_cast<float>(r);
 }
 
 /*---------------------------------------------------------------- InitScene
@@ -33,10 +34,10 @@ float Random( float rmin, float rmax ){
 *--------*/
 void InitScene( void )
 {
-	////// ƒV[ƒ“ƒf[ƒ^‚Ì‰Šú‰»
+	////// ã‚·ãƒ¼ãƒ³ãƒ‡ãƒ¼ã‚¿ã®åˆæœŸåŒ–
 	initRandom();
 
-	//ƒJƒƒ‰‚Ì‰Šú‰»
+	//ã‚«ãƒ¡ãƒ©ã®åˆæœŸåŒ–
 	simdata.camera0.x = 0.0;
 	simdata.camera0.y = 0.0;
 	simdata.camera0.z = 0.0;
@@ -75,31 +76,15 @@ void InitScene( void )
 	simdata.mouse_y = 0.0;
 
 
-	simdata.playerdist = 1.0;
 	simdata.ballooncount = 0;
 	simdata.player_state= 0;
 	simdata.player_dia = 1.0;
 
-	balloondata.rad = 0.5;
-	
-
-
-
-	for(int i = 0; i < NUM_BALLOON; i++){
-		//balloon
-		simdata.balloon[i].state = 0;
-		simdata.balloon[i].x = Random(-30.0, 30.0);
-		simdata.balloon[i].y = 0;
-		simdata.balloon[i].z = Random(-30.0, 30.0);
-		simdata.balloon[i].roll = i*0.5;
-		simdata.balloon[i].pitch = i*0.5;
-		simdata.balloon[i].yaw = i*0.5;
-		balloondata.visuable[i] = true;
-
-		//getBalloon
-		simdata.getballoon[i][0] = 0.0;
-		simdata.getballoon[i][1] = 0.0;
-		simdata.getballoon[i][2] = 0.0;
+	//é¢¨èˆ¹ï¼ˆmemsys ã®å¸¸é§é ˜åŸŸã«ç¢ºä¿ã™ã‚‹ï¼‰
+	balloons = BalloonSet::Create( memsys::Persistent(), NUM_BALLOON, 0.5f );
+	if( balloons == nullptr ){
+		fprintf( stderr, "é¢¨èˆ¹ã®ãƒ¡ãƒ¢ãƒªã‚’ç¢ºä¿ã§ãã¾ã›ã‚“ã§ã—ãŸ\n" );
+		exit( 1 );
 	}
 
 
@@ -112,9 +97,9 @@ void InitScene( void )
 *--------*/
 void UpdateScene( void )
 {
-	for(int i = 0; i < NUM_BALLOON; i++){
-		printf("yÀ•W%f\n",simdata.balloon[i].y);
-		printf("ƒvƒŒƒCƒ„[ó‘Ô%d\n",simdata.player_state);
+	for(int i = 0; i < balloons->Count(); i++){
+		printf("yåº§æ¨™%f\n",balloons->Get( i ).Y());
+		printf("ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼çŠ¶æ…‹%d\n",simdata.player_state);
 		
 	}
 
@@ -123,20 +108,20 @@ void UpdateScene( void )
 		simdata.player.y = 0.0;
 		break;
 	case 1:
-		simdata.player.y += 0.05;
+		simdata.player.y += 0.05f;
 
 	
-		simdata.camera0.y += 0.05;
+		simdata.camera0.y += 0.05f;
 		
 
 		break;
 
 	case 2:
-		simdata.player.y -= 0.05;
+		simdata.player.y -= 0.05f;
 		simdata.ballooncount = 0;
 
 		
-		simdata.camera0.y -= 0.05;
+		simdata.camera0.y -= 0.05f;
 		
 
 		
@@ -145,84 +130,36 @@ void UpdateScene( void )
 
 
 	if(simdata.ballooncount == 5 && simdata.player.y < 10 ){
-		simdata.player_state = 1; // ã¸‚Ìó‘Ô‘JˆÚ
+		simdata.player_state = 1; // ä¸Šæ˜‡æ™‚ã®çŠ¶æ…‹é·ç§»
 	}
 
 	if (simdata.player.y >= 10){
-		simdata.player_state = 2; //‰º~‚Ìó‘Ô‘JˆÚ
+		simdata.player_state = 2; //ä¸‹é™æ™‚ã®çŠ¶æ…‹é·ç§»
 	}
 	else if( simdata.player.y < 0){
 		simdata.player_state = 0;
 	}
 
 
-	float dxx;  //‹…‚Æ•¨‘Ì‚ÌxÀ•WŠÔ‹——£
-	float dyy;  //‹…‚Æ•¨‘Ì‚ÌyÀ•WŠÔ‹——£
-	float dzz;  //‹…‚Æ•¨‘Ì‚ÌzÀ•WŠÔ‹——£
+	//é¢¨èˆ¹ã®æ¥è§¦åˆ¤å®šã¨ç§»å‹•ï¼ˆä»Šå›ãã£ã¤ã„ãŸæ•°ã‚’æ•°ãˆã‚‹ï¼‰
+	simdata.ballooncount += balloons->Update( simdata.player.x, simdata.player.y, simdata.player.z,
+	                                          simdata.player_dia, simdata.player_state );
 
-	for(int i = 0; i< NUM_BALLOON; i++){
-		if (simdata.dist_state[i] ==0){
-			//ƒvƒŒƒCƒ„‚Æ•—‘D‚Ì‹——£‚ğ‹‚ß‚é
-			dxx = powf (simdata.player.x - simdata.balloon[i].x ,2);  //’†SŠÔ‚ÌxÀ•W‚Ì·
-			dyy = powf (simdata.player.y - simdata.balloon[i].y ,2);  //’†SŠÔ‚ÌyÀ•W‚Ì·@
-			dzz	= powf (simdata.player.z - simdata.balloon[i].z ,2);  //’†SŠÔ‚ÌzÀ•W‚Ì·
-			simdata.playerdist = sqrtf (dxx + dyy + dzz);
-
-			//Õ“Ë”»’è
-			if (simdata.playerdist < balloondata.rad + simdata.player_dia /2 ){
-				simdata.ballooncount++;
-				//•—‘D‚ÌˆÚ“®‹——£‚ğ‹‚ß‚é
-				simdata.getballoon[i][0] = Random(-3.0, 3.0);
-				simdata.getballoon[i][1] = Random(0.6, 3.0);
-				simdata.getballoon[i][2] = Random(-3.0, 3.0);
-
-				//•—‘D‚Ìó‘Ô‚ğXV‚·‚é
-				if(simdata.dist_state[i] == 0){
-					simdata.dist_state[i] = 1;		
-				}
-			}
-		}
-		else{
-			switch (simdata.dist_state[i]){
-
-			case 0:
-				break;
-			case 1:  //•—‘D‚ÌÕ“Ë
-				if(simdata.player_state <2){
-					simdata.balloon[i].x = simdata.player.x + simdata.getballoon[i][0];
-					simdata.balloon[i].y = simdata.player.y + simdata.getballoon[i][1];
-					simdata.balloon[i].z = simdata.player.z + simdata.getballoon[i][2];
-				}
-				else if(simdata.player_state == 2){
-					printf("‹ó‚É”ò‚Ô```\n");
-					simdata.balloon[i].y += 0.01; 
-					if(simdata.player.y <= 0.2){
-						balloondata.visuable[i] = false;
-					}
-					
-				
-				}
-				break;
-			}
-
-		}
-	}
-
-	//////// ƒf[ƒ^XV ////////
+	//////// ãƒ‡ãƒ¼ã‚¿æ›´æ–° ////////
 	//printf( "move = %f\n", simdata.move );
 	//printf( "rot = %f\n", simdata.rot );
 
 
 	
-	//// ‰ñ“]•ûŒü‚ÌXV
+	//// å›è»¢æ–¹å‘ã®æ›´æ–°
 	simdata.player.yaw += simdata.rot;
 	
-	//// ˆÊ’u‚ÌXV
-	float dx; //X²•ûŒü‚ÌˆÚ“®—Ê
-	float dz; //Z²•ûŒü‚ÌˆÚ“®—Ê
+	//// ä½ç½®ã®æ›´æ–°
+	float dx; //Xè»¸æ–¹å‘ã®ç§»å‹•é‡
+	float dz; //Zè»¸æ–¹å‘ã®ç§»å‹•é‡
 
-	dx = - simdata.move * sinf( simdata.player.yaw / 180.0 * 3.14 );
-	dz = - simdata.move * cosf( simdata.player.yaw / 180.0 * 3.14 );
+	dx = - simdata.move * sinf( simdata.player.yaw / 180.0f * 3.14f );
+	dz = - simdata.move * cosf( simdata.player.yaw / 180.0f * 3.14f );
 
 	simdata.player.x += dx;
 	simdata.player.z += dz;
@@ -232,15 +169,15 @@ void UpdateScene( void )
 
 	if(simdata.camera.state ==0){
 
-	//‰ñ“]•ûŒü‚ÌXV
+	//å›è»¢æ–¹å‘ã®æ›´æ–°
 	simdata.camera0.yaw += simdata.rot;
 
-	//ˆÊ’u‚ÌXV
-	float dx2;  //X²•ûŒü‚ÌˆÚ“®—Ê
-	float dz2;  //Z²•ûŒü‚ÌˆÚ“®—Ê
+	//ä½ç½®ã®æ›´æ–°
+	float dx2;  //Xè»¸æ–¹å‘ã®ç§»å‹•é‡
+	float dz2;  //Zè»¸æ–¹å‘ã®ç§»å‹•é‡
 
-	dx2 = -simdata.move * sinf( simdata.camera0.yaw /180.0 *3.14);
-	dz2 = - simdata.move * cosf(simdata.camera0.yaw / 180.0 * 3.14);
+	dx2 = -simdata.move * sinf( simdata.camera0.yaw /180.0f *3.14f);
+	dz2 = - simdata.move * cosf(simdata.camera0.yaw / 180.0f * 3.14f);
 
 
 	simdata.camera0.x += dx2;

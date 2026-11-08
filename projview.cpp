@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <GL/GLUT.h>
+#include "glheaders.h"
 
 #include "common.h"
 
@@ -12,51 +12,35 @@ extern WindowDataT window;
  *--------*/
 void Viewing( void )
 {  
-	///// ƒJƒƒ‰‘€ìiˆÊ’u‚ÆŒü‚«j
-	///// ƒrƒ…[ƒCƒ“ƒO•ÏŠ·
+	///// ã‚«ãƒ¡ãƒ©æ“ä½œï¼ˆä½ç½®ã¨å‘ãï¼‰
+	///// ãƒ“ãƒ¥ãƒ¼ã‚¤ãƒ³ã‚°å¤‰æ›
 
-	///// ƒJƒƒ‰ŒÅ’è
-	switch(simdata.camera.state){
-	case 0:
-		gluLookAt( 0.0, 1.0, 2.0, 0.0, 1.0, -1.0, 0.0, 1.0, 0.0 );
-	//ƒJƒƒ‰‚ÌˆÊ’uî•ñ‚ğg‚Á‚½ƒrƒ…[ƒCƒ“ƒO•ÏŠ·‚Ìİ’è
-	glRotatef( - simdata.camera0.roll, 0.0, 0.0, 1.0 ); // roll‰ñ“]‚Ì‹t•ÏŠ·/Z²
-	glRotatef( - simdata.camera0.pitch, 1.0, 0.0, 0.0 ); // pitch‰ñ“]‚Ì‹t•ÏŠ·/X
-	glRotatef( - simdata.camera0.yaw, 0.0, 1.0, 0.0 ); // yaw‰ñ“]‚Ì‹t•ÏŠ·/Y
-	glTranslatef( - simdata.camera0.x, - simdata.camera0.y, - simdata.camera0.z ); 
-	// (x,y,z)‚Ì•½sˆÚ“®‚Ì‹t•ÏŠ·
-	break;
+	///// ã‚«ãƒ¡ãƒ©å›ºå®š
+	switch(simdata.camera.state)
+	{
+		case 0:
+			gluLookAt( 0.0, 1.0, 2.0, 0.0, 1.0, -1.0, 0.0, 1.0, 0.0 );
+			//ã‚«ãƒ¡ãƒ©ã®ä½ç½®æƒ…å ±ã‚’ä½¿ã£ãŸãƒ“ãƒ¥ãƒ¼ã‚¤ãƒ³ã‚°å¤‰æ›ã®è¨­å®š
+			glRotatef( - simdata.camera0.roll, 0.0, 0.0, 1.0 ); // rollå›è»¢ã®é€†å¤‰æ›/Zè»¸
+			glRotatef( - simdata.camera0.pitch, 1.0, 0.0, 0.0 ); // pitchå›è»¢ã®é€†å¤‰æ›/X
+			glRotatef( - simdata.camera0.yaw, 0.0, 1.0, 0.0 ); // yawå›è»¢ã®é€†å¤‰æ›/Y
+			glTranslatef( - simdata.camera0.x, - simdata.camera0.y, - simdata.camera0.z ); 
+			// (x,y,z)ã®å¹³è¡Œç§»å‹•ã®é€†å¤‰æ›
+			break;
 
-	case 1:
-    gluLookAt( 0.0,  5.0, 8.0,simdata.player.x, simdata.player.y, simdata.player.z,0.0, 1.0, 0.0 );
-	
-	break;
+		case 1:
+			gluLookAt( 0.0,  5.0, 8.0,simdata.player.x, simdata.player.y, simdata.player.z,0.0, 1.0, 0.0 );
+			break;
 	}
-
-
-	/*
-	//ƒJƒƒ‰‚ÌˆÊ’uî•ñ‚ğg‚Á‚½ƒrƒ…[ƒCƒ“ƒO•ÏŠ·‚Ìİ’è
-	glRotatef( - simdata.camera0.roll, 0.0, 0.0, 1.0 ); // roll‰ñ“]‚Ì‹t•ÏŠ·/Z²
-	glRotatef( - simdata.camera0.pitch, 1.0, 0.0, 0.0 ); // pitch‰ñ“]‚Ì‹t•ÏŠ·/X
-	glRotatef( - simdata.camera0.yaw, 0.0, 1.0, 0.0 ); // yaw‰ñ“]‚Ì‹t•ÏŠ·/Y
-	glTranslatef( - simdata.camera0.x, - simdata.camera0.y, - simdata.camera0.z ); 
-	// (x,y,z)‚Ì•½sˆÚ“®‚Ì‹t•ÏŠ·
-	*/
-
-
-	
-
-
-
-
 }
+
 /*---------------------------------------------------------------- Projection
  * Projection:
  *--------*/
 void Projection( void )
 {
 	//---- begin projection transformation
-	//‰æŠp‚Ì’²®
-	//ƒNƒŠƒbƒsƒ“ƒO[‚³‚Ì’²®
+	//ç”»è§’ã®èª¿æ•´
+	//ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°æ·±ã•ã®èª¿æ•´
     gluPerspective( 45.0, window.aspect, 0.1, 100.0 );
 }

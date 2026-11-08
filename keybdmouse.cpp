@@ -3,7 +3,7 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-#include <GL/GLUT.h>
+#include "inputsys.h"
 
 #include "common.h"
 
@@ -19,14 +19,14 @@ bool isAltKeyDown( void );
  * Shift, Ctrl, Alt key status
  */
 bool isShiftKeyDown( void )
-{ return (bool)(glutGetModifiers() & GLUT_ACTIVE_SHIFT); }
+{ return inputsys::IsKeyDown( VK_SHIFT ); }
 bool isCtrlKeyDown( void )
-{ return (bool)(glutGetModifiers() & GLUT_ACTIVE_CTRL); }
+{ return inputsys::IsKeyDown( VK_CONTROL ); }
 bool isAltKeyDown( void )
-{ return (bool)(glutGetModifiers() & GLUT_ACTIVE_ALT); }
+{ return inputsys::IsKeyDown( VK_MENU ); }
 
 /*------------------------------------------------------------- charKeyDown/Up
- * charKeyDown/Up - GLUT keyboard callback function
+ * charKeyDown/Up - keyboard callback function (inputsys.cpp ã‹ã‚‰ GameInput ã®å…¥åŠ›ã§å‘¼ã¶)
  * key: ASCII code
  * x, y: mouse position
  *--------*/
@@ -67,35 +67,35 @@ void charKeyUp( unsigned char key, int x, int y )
 	}
 }
 /*--------------------------------------------------------------- funcKeyDown/Up
- * funcKeyDown/Up - GLUT special key callback
- * key: GLUT key code
+ * funcKeyDown/Up - special key callback (inputsys.cpp ã‹ã‚‰ GameInput ã®å…¥åŠ›ã§å‘¼ã¶)
+ * key: Windows virtual-key code (VK_*)
  * x, y: mouse position
  */
 void funcKeyDown( int key, int x, int y )
 {
-	//ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“ƒL[
-	//[F*]: GLUT_KEY_F*(*‚Í1`12)
-	//[F1]: GLUT_KEY_F1
-	//[F12]:GLUT_KEY_F12
-	//‚»‚Ì‘¼‚Ì‹@”\ƒL[
-    //[PageUp]  : GLUT_KEY_PAGE_UP:
-    //[PageDown]: GLUT_KEY_PAGE_DOWN:
-    //[Home]    : GLUT_KEY_HOME:
-    //[End]     : GLUT_KEY_END:
-    //[Insert]  : GLUT_KEY_INSERT:
+	//ãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³ã‚­ãƒ¼
+	//[F*]: VK_F*(*ã¯1ï½12)
+	//[F1]: VK_F1
+	//[F12]:VK_F12
+	//ãã®ä»–ã®æ©Ÿèƒ½ã‚­ãƒ¼
+    //[PageUp]  : VK_PRIOR:
+    //[PageDown]: VK_NEXT:
+    //[Home]    : VK_HOME:
+    //[End]     : VK_END:
+    //[Insert]  : VK_INSERT:
 
-	//ƒJ[ƒ\ƒ‹ƒL[
+	//ã‚«ãƒ¼ã‚½ãƒ«ã‚­ãƒ¼
 	switch( key ){
-	  case GLUT_KEY_LEFT: //[©]
+	  case VK_LEFT: //[â†]
 		  simdata.rot = 2.5;
 		break;
-  	  case GLUT_KEY_RIGHT://[¨]
+  	  case VK_RIGHT://[â†’]
 		  simdata.rot -=  2.5;
 		break;
-	  case GLUT_KEY_UP: //[ª]
+	  case VK_UP: //[â†‘]
 		  simdata.move = 0.1;
 		break;
-	  case GLUT_KEY_DOWN://[«]
+	  case VK_DOWN://[â†“]
 		  simdata.move -=  0.1;
 		break;
 	}
@@ -103,25 +103,25 @@ void funcKeyDown( int key, int x, int y )
 void funcKeyUp( int key, int x, int y )
 {
 	switch( key ){
-	  case GLUT_KEY_LEFT: //[©]
+	  case VK_LEFT: //[â†]
 		  simdata.rot = 0.0;
 		break;
-  	  case GLUT_KEY_RIGHT://[¨]
+  	  case VK_RIGHT://[â†’]
 		  simdata.rot = 0.0;
 		break;
-	  case GLUT_KEY_UP: //[ª]
+	  case VK_UP: //[â†‘]
 		  simdata.move = 0.0;
 		break;
-	  case GLUT_KEY_DOWN://[«]
+	  case VK_DOWN://[â†“]
 		  simdata.move = 0.0;
 		break;
 	}
 }
 /*------------------------------------------------------------- mouseClick
- * mouseClick - GLUT mouse callback function
- * button: mouse button
- * stateFpress or release
- * x, yFmouse position
+ * mouseClick - mouse callback function (inputsys.cpp ã‹ã‚‰ GameInput ã®å…¥åŠ›ã§å‘¼ã¶)
+ * button: mouse button (GameInputMouse*Button)
+ * stateï¼špress or release
+ * x, yï¼šmouse position
  *--------*/
 void mouseClick( int button , int state, int x, int y )
 {
@@ -133,44 +133,44 @@ void mouseClick( int button , int state, int x, int y )
 
 		
     switch( button ){
-      case GLUT_LEFT_BUTTON:
+      case GameInputMouseLeftButton:
         switch( state ){
-          case GLUT_DOWN: // press
-			  simdata.mouse_left = true;  // <-‰Ÿ‚·
-			  simdata.move = simdata.mouse_y *0.2;  //ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½uŠÔ‚Ì‘¬“xİ’è
+          case MOUSE_DOWN: // press
+			  simdata.mouse_left = true;  // <-æŠ¼ã™
+			  simdata.move = simdata.mouse_y *0.2;  //ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸç¬é–“ã®é€Ÿåº¦è¨­å®š
 			  simdata.rot = - simdata.mouse_x * 2.0;
             break;
-          case GLUT_UP: // release
-			  simdata.mouse_left =false; // <-—£‚·
-			  simdata.move = 0.0;  //ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½uŠÔ‚Ì‘¬“xİ’è(’â~j
+          case MOUSE_UP: // release
+			  simdata.mouse_left =false; // <-é›¢ã™
+			  simdata.move = 0.0;  //ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸç¬é–“ã®é€Ÿåº¦è¨­å®š(åœæ­¢ï¼‰
 			    simdata.rot = 0.0;
             break;
           default:
             break;
         }
         break;
-      case GLUT_MIDDLE_BUTTON:
+      case GameInputMouseMiddleButton:
         switch( state ){
-          case GLUT_DOWN: // press
-			  simdata.mouse_middle = true; //<-‰Ÿ‚·
+          case MOUSE_DOWN: // press
+			  simdata.mouse_middle = true; //<-æŠ¼ã™
 
             break;
-          case GLUT_UP: // release
-			  simdata.mouse_middle = false; //<-—£‚·
+          case MOUSE_UP: // release
+			  simdata.mouse_middle = false; //<-é›¢ã™
             break;
           default:
             break;
         }
         break;
-      case GLUT_RIGHT_BUTTON:
+      case GameInputMouseRightButton:
         switch( state ){
-          case GLUT_DOWN: // press
-			  simdata.mouse_right =true;//<-‰Ÿ‚·
+          case MOUSE_DOWN: // press
+			  simdata.mouse_right =true;//<-æŠ¼ã™
 
             break;
-          case GLUT_UP: // release
+          case MOUSE_UP: // release
 
-			  simdata.mouse_right =false;//<-—£‚·
+			  simdata.mouse_right =false;//<-é›¢ã™
             break;
           default:
             break;
@@ -193,7 +193,7 @@ void mouseDrag( int x, int y )
 	simdata.mouse_x = (float)x *2.0 / window.width -1.0;
 	simdata.mouse_y = -(float)y *2.0 / window.height +1.0;
 	printf(" mouse x,y:%f,%f\n",simdata.mouse_x,simdata.mouse_y);
-	simdata.move = simdata.mouse_y * 0.2;  //‰Ÿ‚µ‚Ä‚¢‚éŠÔ‚Ì‘¬“xİ’è
+	simdata.move = simdata.mouse_y * 0.2;  //æŠ¼ã—ã¦ã„ã‚‹é–“ã®é€Ÿåº¦è¨­å®š
 	simdata.rot = - simdata.mouse_x * 2.0;
 	}
 

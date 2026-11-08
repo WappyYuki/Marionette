@@ -22,54 +22,41 @@ typedef struct {
 	char *title;
 } WindowDataT;
 
-//// ƒIƒuƒWƒFƒNƒg—p‚Ì‹¤’Ê\‘¢‘Ì
+//// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆç”¨ã®å…±é€šæ§‹é€ ä½“
 typedef struct {
-	float x, y, z; //ˆÊ’uÀ•W
-	float roll, pitch, yaw; //p¨i‰ñ“]jî•ñ
+	float x, y, z; //ä½ç½®åº§æ¨™
+	float roll, pitch, yaw; //å§¿å‹¢ï¼ˆå›è»¢ï¼‰æƒ…å ±
 	bool visuable;
-	int state; //ó‘Ô•Ï”
+	int state; //çŠ¶æ…‹å¤‰æ•°
 } ObjDataT;
-
-//// •—‘D—p‚Ì‹¤’Ê\‘¢‘Ì
-typedef struct {
-	float x, y, z; //ˆÊ’uÀ•W
-	float roll, pitch, yaw; //p¨i‰ñ“]jî•ñ
-	float rad;  //•—‘D‚Ì”¼Œa
-	int state; //ó‘Ô•Ï”
-	bool visuable[NUM_BALLOON];
-} BalloonDataT;
 
 //-------- simulation data
 typedef struct {
-    //////// ƒ†[ƒU’è‹`‚ÌƒV[ƒ“‚É‚Â‚¢‚Ä‚Ìƒf[ƒ^‚ğ‚±‚±‚É‚Ü‚Æ‚ß‚é
-	ObjDataT camera0; //ƒJƒƒ‰0ƒIƒuƒWƒFƒNƒg(åŠÏ‹“_j
-	ObjDataT camera1; //ƒJƒƒ‰1ƒIƒuƒWƒFƒNƒg(‹qŠÏ‹“_j
+    //////// ãƒ¦ãƒ¼ã‚¶å®šç¾©ã®ã‚·ãƒ¼ãƒ³ã«ã¤ã„ã¦ã®ãƒ‡ãƒ¼ã‚¿ã‚’ã“ã“ã«ã¾ã¨ã‚ã‚‹
+	ObjDataT camera0; //ã‚«ãƒ¡ãƒ©0ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ(ä¸»è¦³è¦–ç‚¹ï¼‰
+	ObjDataT camera1; //ã‚«ãƒ¡ãƒ©1ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ(å®¢è¦³è¦–ç‚¹ï¼‰
 	ObjDataT camera;
 	ObjDataT player;
 
-	float move; //ƒJƒƒ‰‚ÌˆÚ“®—Ê
-	float rot; //ƒJƒƒ‰‚Ì‰ñ“]—Ê
+	float move; //ã‚«ãƒ¡ãƒ©ã®ç§»å‹•é‡
+	float rot; //ã‚«ãƒ¡ãƒ©ã®å›è»¢é‡
 
-	bool mouse_left;    //ƒ}ƒEƒX‚Ì¶ƒ{ƒ^ƒ“‚Ìó‘Ô
-	bool mouse_right;  //ƒ}ƒEƒX‚Ì‰Eƒ{ƒ^ƒ“‚Ìó‘Ô
-	bool mouse_middle;  //ƒ}ƒEƒX‚Ì’†ƒ{ƒ^ƒ“‚Ìó‘Ô
+	bool mouse_left;    //ãƒã‚¦ã‚¹ã®å·¦ãƒœã‚¿ãƒ³ã®çŠ¶æ…‹
+	bool mouse_right;  //ãƒã‚¦ã‚¹ã®å³ãƒœã‚¿ãƒ³ã®çŠ¶æ…‹
+	bool mouse_middle;  //ãƒã‚¦ã‚¹ã®ä¸­ãƒœã‚¿ãƒ³ã®çŠ¶æ…‹
 
 
-	float mouse_x; //³‹K‰»‚³‚ê‚½ƒ}ƒEƒX‚ÌXÀ•W[-1.0, 1.0](‰E‘¤‚ª³)
-	float mouse_y; //³‹K‰»‚³‚ê‚½ƒ}ƒEƒX‚ÌYÀ•W[-1.0, 1.0](¶‘¤‚ª³)
+	float mouse_x; //æ­£è¦åŒ–ã•ã‚ŒãŸãƒã‚¦ã‚¹ã®Xåº§æ¨™[-1.0, 1.0](å³å´ãŒæ­£)
+	float mouse_y; //æ­£è¦åŒ–ã•ã‚ŒãŸãƒã‚¦ã‚¹ã®Yåº§æ¨™[-1.0, 1.0](å·¦å´ãŒæ­£)
 
-	float playerdist;  //ƒIƒuƒWƒFƒNƒg’†SŠÔ‹——£
 	
 
-	int ballooncount;     //•—‘D‚Ì”‚ÌŒvZ
-	int player_state;   //ƒvƒŒƒCƒ„[‚Ìy²‚ÌˆÊ’u
-	float player_dia;  //ƒvƒŒƒCƒ„[ƒIƒuƒWƒFƒNƒg‚Ì’¼Œa
+	int ballooncount;     //é¢¨èˆ¹ã®æ•°ã®è¨ˆç®—
+	int player_state;   //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®yè»¸ã®ä½ç½®
+	float player_dia;  //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ç›´å¾„
 	
 
 
 
-	BalloonDataT balloon[NUM_BALLOON];  // •—‘D‚ÌˆÊ’u
-	float getballoon[NUM_BALLOON][3];  //Õ“Ë‚Ì•—‘D‚ÌˆÚ“®—Ê
-	int dist_state[NUM_BALLOON];  //•—‘D‚Ìó‘Ô‘JˆÚ@@1=•—‘D‚Ì‘Š‘ÎˆÊ’u’è‹`¨@2=•—‘D‚Ìplayer‚©‚ç‚ÌˆÊ’u
 	////////
 } SimDataT;

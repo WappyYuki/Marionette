@@ -1,14 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
+    <!-- GameInput は 32bit プロセスでは使えない（GameInputCreate が E_NOTIMPL）ため x64 のみ -->
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -45,15 +38,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <!-- GLUT は vcpkg.json の freeglut を使う。vcpkg integrate install 済みならその設定を、未設定なら VS 同梱の vcpkg を使う -->
-  <PropertyGroup Label="Vcpkg">
-    <VcpkgEnableManifest>true</VcpkgEnableManifest>
-    <_MarionetteVcpkgDir>$(VsInstallRoot)\VC\vcpkg\scripts\buildsystems\msbuild\</_MarionetteVcpkgDir>
-    <_MarionetteImportVcpkg Condition="'$(VcpkgPropsImported)' != 'true' And Exists('$(_MarionetteVcpkgDir)vcpkg.props')">true</_MarionetteImportVcpkg>
-  </PropertyGroup>
-  <Import Project="$(_MarionetteVcpkgDir)vcpkg.props" Condition="'$(_MarionetteImportVcpkg)' == 'true'" />
   <PropertyGroup Label="UserMacros" />
-  <!-- VS 2010 時代の Debug\ 出力と混ざらないよう、出力先を分ける -->
   <PropertyGroup>
     <OutDir>$(MSBuildProjectDirectory)\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\</IntDir>
@@ -71,8 +56,8 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <!-- ソースは Shift_JIS -->
-      <AdditionalOptions>/source-charset:shift_jis /execution-charset:shift_jis %(AdditionalOptions)</AdditionalOptions>
+      <!-- ソースも文字列リテラルも UTF-8 -->
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>WIN32;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -100,23 +85,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="actor.cpp" />
+    <ClCompile Include="balloon.cpp" />
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="ezUtil.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="memsys.cpp" />
+    <ClCompile Include="inputsys.cpp" />
     <ClCompile Include="keybdmouse.cpp" />
     <ClCompile Include="projview.cpp" />
+    <ClCompile Include="shapes.cpp" />
     <ClCompile Include="sim.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="actor.h" />
+    <ClInclude Include="balloon.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="ezUtil.h" />
     <ClInclude Include="font.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vcpkg.json" />
+    <ClInclude Include="glheaders.h" />
+    <ClInclude Include="inputsys.h" />
+    <ClInclude Include="memsys.h" />
+    <ClInclude Include="shapes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <Import Project="$(_MarionetteVcpkgDir)vcpkg.targets" Condition="'$(_MarionetteImportVcpkg)' == 'true'" />
 </Project>

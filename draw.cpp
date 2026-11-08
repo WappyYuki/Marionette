@@ -1,14 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <GL/GLUT.h>
+#include "glheaders.h"
+#include "shapes.h"
 
 #include "ezUtil.h"
 
 #include "common.h"
+#include "balloon.h"
 
 extern WindowDataT window;
 extern SimDataT simdata;
-extern BalloonDataT balloondata;
+extern BalloonSet *balloons;
 
 //-------- prototypes for user functions
 void setLightMain( void );
@@ -114,23 +116,7 @@ void setMaterialRedPlastic( void )
 void drawWireCube( void )
 {
     glColor3f( 1.0, 1.0, 1.0 );
-    glutWireCube( 1.0 );
-    return;
-}
-/*------------------------------------------------------------------ drawObj
- * drawSolidSphere:
- *--------*/
-void drawSolidSphere( void )
-{
-	glPushMatrix();
-	{
-		glTranslatef( 0.0, 0.0, 0.0 ); //ƒIƒuƒWƒFƒNƒgŠî€ˆÊ’u’²®
-		glRotatef( 0.0, 0.0, 1.0, 0.0 ); //ƒIƒuƒWƒFƒNƒgŠî€p¨’²®Fƒˆ[Šp
-		glRotatef( 0.0, 1.0, 0.0, 0.0 ); //ƒIƒuƒWƒFƒNƒgŠî€p¨’²®Fƒsƒbƒ`Šp
-		glRotatef( 0.0, 0.0, 0.0, 1.0 ); //ƒIƒuƒWƒFƒNƒgŠî€p¨’²®Fƒ[ƒ‹Šp
-		glutSolidSphere( balloondata.rad, 20, 25 );
-	}
-	glPopMatrix();
+    shapes::WireCube( 1.0 );
     return;
 }
 /*------------------------------------------------------------------ drawObj
@@ -140,11 +126,11 @@ void drawSolidCube( void )
 {
 	glPushMatrix();
 	{
-		glTranslatef( 0.0, 0.0, 0.0 ); //ƒIƒuƒWƒFƒNƒgŠî€ˆÊ’u’²®
-		glRotatef( 0.0, 0.0, 1.0, 0.0 ); //ƒIƒuƒWƒFƒNƒgŠî€p¨’²®Fƒˆ[Šp
-		glRotatef( 0.0, 1.0, 0.0, 0.0 ); //ƒIƒuƒWƒFƒNƒgŠî€p¨’²®Fƒsƒbƒ`Šp
-		glRotatef( 0.0, 0.0, 0.0, 1.0 ); //ƒIƒuƒWƒFƒNƒgŠî€p¨’²®Fƒ[ƒ‹Šp
-		glutSolidCube( simdata.player_dia );
+		glTranslatef( 0.0, 0.0, 0.0 ); //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåŸºæº–ä½ç½®èª¿æ•´
+		glRotatef( 0.0, 0.0, 1.0, 0.0 ); //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåŸºæº–å§¿å‹¢èª¿æ•´ï¼šãƒ¨ãƒ¼è§’
+		glRotatef( 0.0, 1.0, 0.0, 0.0 ); //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåŸºæº–å§¿å‹¢èª¿æ•´ï¼šãƒ”ãƒƒãƒè§’
+		glRotatef( 0.0, 0.0, 0.0, 1.0 ); //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåŸºæº–å§¿å‹¢èª¿æ•´ï¼šãƒ­ãƒ¼ãƒ«è§’
+		shapes::SolidCube( simdata.player_dia );
 	}
 	glPopMatrix();
     return;
@@ -154,19 +140,19 @@ void drawSolidCube( void )
  *--------*/
 void DrawScene( void )
 {
-	glDisable( GL_LIGHTING ); //ˆê’UŒõŒ¹ƒIƒt
-	//XZ•½–Êã‚ÌƒOƒŠƒbƒh‚Ì•`‰æ
+	glDisable( GL_LIGHTING ); //ä¸€æ—¦å…‰æºã‚ªãƒ•
+	//XZå¹³é¢ä¸Šã®ã‚°ãƒªãƒƒãƒ‰ã®æç”»
 	glPushMatrix();
 	glRotatef( 90.0, 1.0, 0.0, 0.0 );
 	glColor3f( 0.6, 0.6, 0.6 );
-	ezUtil_drawGrid( 1000.0, 1000.0 ); //ü‚Ì–{”C•`‰æ‚·‚é—Ìˆæ‚ÌL‚³
+	ezUtil_drawGrid( 1000.0, 1000.0 ); //ç·šã®æœ¬æ•°ï¼Œæç”»ã™ã‚‹é ˜åŸŸã®åºƒã•
 	glPopMatrix();
 
-	//À•W²‚Ì•`‰æ
+	//åº§æ¨™è»¸ã®æç”»
 	glLineWidth( 2.0 );
-	ezUtil_drawAxes( 100.0 );//À•W²‚Ì’·‚³
+	ezUtil_drawAxes( 100.0 );//åº§æ¨™è»¸ã®é•·ã•
 	glLineWidth( 1.0 );
-	glEnable( GL_LIGHTING ); //ŒõŒ¹•œŠˆ
+	glEnable( GL_LIGHTING ); //å…‰æºå¾©æ´»
 
 	//-------- background color
     glClearColor( 0.2, 0.3, 0.4, 1.0 );
@@ -177,12 +163,12 @@ void DrawScene( void )
 
 	
 
-	glPushMatrix(); //// player‚ÌˆÊ’u‚ÉƒIƒuƒWƒFƒNƒg‚ğ•`‚­
+	glPushMatrix(); //// playerã®ä½ç½®ã«ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æã
 	{
-		glTranslatef( simdata.player.x, simdata.player.y, simdata.player.z ); //ƒIƒuƒWƒFƒNƒgˆÊ’u
-		glRotatef( simdata.player.yaw, 0.0, 1.0, 0.0 ); //ƒIƒuƒWƒFƒNƒg‰ñ“]Fƒˆ[Šp
-		glRotatef( simdata.player.pitch, 1.0, 0.0, 0.0 ); //ƒIƒuƒWƒFƒNƒg‰ñ“]Fƒsƒbƒ`Šp
-		glRotatef( simdata.player.roll, 0.0, 0.0, 1.0 ); //ƒIƒuƒWƒFƒNƒg‰ñ“]Fƒ[ƒ‹Šp
+		glTranslatef( simdata.player.x, simdata.player.y, simdata.player.z ); //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆä½ç½®
+		glRotatef( simdata.player.yaw, 0.0, 1.0, 0.0 ); //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå›è»¢ï¼šãƒ¨ãƒ¼è§’
+		glRotatef( simdata.player.pitch, 1.0, 0.0, 0.0 ); //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå›è»¢ï¼šãƒ”ãƒƒãƒè§’
+		glRotatef( simdata.player.roll, 0.0, 0.0, 1.0 ); //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå›è»¢ï¼šãƒ­ãƒ¼ãƒ«è§’
 		
 
 		if(simdata.camera.state ==0){
@@ -201,73 +187,8 @@ void DrawScene( void )
 
 
 	
-	for(int i = 0; i< NUM_BALLOON; i++){
-		glPushMatrix();
-		{
-			if(balloondata.visuable[i] ==true){
-			glTranslatef( simdata.balloon[i].x, simdata.balloon[i].y, simdata.balloon[i].z); //ƒIƒuƒWƒFƒNƒgˆÊ’u
-			glRotatef( simdata.balloon[i].yaw, 0.0, 1.0, 0.0 ); //ƒIƒuƒWƒFƒNƒg‰ñ“]Fƒˆ[Šp
-			glRotatef( simdata.balloon[i].pitch, 1.0, 0.0, 0.0 ); //ƒIƒuƒWƒFƒNƒg‰ñ“]Fƒsƒbƒ`Šp
-			glRotatef( simdata.balloon[i].roll, 0.0, 0.0, 1.0 ); //ƒIƒuƒWƒFƒNƒg‰ñ“]Fƒ[ƒ‹Šp
-		   setMaterialRedPlastic();
-		  drawSolidSphere();
-			}
-			else{
-				
-
-			}
-
-
-
-
-
-
-
-
-		}
-		glPopMatrix();
-
-		if(simdata.dist_state[i]  == 1  && simdata.player_state ==0 && balloondata.visuable[i] == true){
-			
-		glPushMatrix();
-		{
-			glBegin( GL_LINE_LOOP );
-			glColor4f(1.0, 0.2, 0.2, 0.0);	// ü•ª‚ÌF(RGBA)
-			glVertex3f(simdata.player.x , simdata.player.y, simdata.player.z);
-			glVertex3f(simdata.balloon[i].x, simdata.balloon[i].y, simdata.balloon[i].z);
-			glEnd();
-		}
-		glPopMatrix();
-
-	
-
-		}
-		
-
-		if(simdata.dist_state[i]  == 1  && simdata.player_state ==1  && balloondata.visuable[i] == true){
-			
-
-		glPushMatrix();
-		{
-			glBegin( GL_LINE_LOOP );
-			glColor4f(1.0, 0.2, 0.2, 0.0);	// ü•ª‚ÌF(RGBA)
-			glVertex3f(simdata.player.x , simdata.player.y, simdata.player.z);
-			glVertex3f(simdata.balloon[i].x, simdata.balloon[i].y, simdata.balloon[i].z);
-			glEnd();
-		}
-		glPopMatrix();
-
-	
-
-		}
-
-
-
-		
-
-		
-
-	}
+	//é¢¨èˆ¹ã¨ç³¸
+	balloons->Draw( simdata.player.x, simdata.player.y, simdata.player.z, simdata.player_state );
 
 	
 
