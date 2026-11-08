@@ -10,13 +10,13 @@
 #include "glheaders.h"
 #include "shapes.h"
 
-// sim.cpp
+// balloongame.cpp
 float Random( float rmin, float rmax );
 
 // draw.cpp
 void setMaterialRedPlastic( void );
 
-static_assert( std::is_trivially_destructible_v<Balloon>, "アリーナに置くのでデストラクタ不要にする" );
+// BalloonSet はアリーナに置く（デストラクタは呼ばれない）。風船は RemoveAll() で片付ける
 static_assert( std::is_trivially_destructible_v<BalloonSet>, "アリーナに置くのでデストラクタ不要にする" );
 
 //---------------------------------------------------------------------- Balloon
@@ -93,37 +93,49 @@ void Balloon::DrawString( float playerX, float playerY, float playerZ, int playe
 }
 
 //------------------------------------------------------------------- BalloonSet
-BalloonSet *BalloonSet::Create( memsys::Arena &arena, int count, float radius )
+BalloonSet *BalloonSet::Create( memsys::Arena &arena, memsys::Arena &poolArena,
+                                int capacity, int count, float radius )
 {
-	if( count < 0 ) return nullptr;
+	if( capacity < 0 || count < 0 || count > capacity ) return nullptr;
 
 	BalloonSet *set = memsys::New<BalloonSet>( arena );
-	Balloon *balloons = memsys::NewArray<Balloon>( arena, static_cast<std::size_t>( count ) );
-	if( set == nullptr || balloons == nullptr ) return nullptr;
+	if( set == nullptr || !set->pool_.Init( poolArena, static_cast<std::size_t>( capacity ) ) ) return nullptr;
 
-	set->balloons_ = balloons;
-	set->count_ = count;
+	set->radius_ = radius;
 	for( int i = 0; i < count; ++i ){
-		balloons[i].Init( i, radius );
+		set->Spawn();
 	}
 	return set;
+}
+
+Balloon *BalloonSet::Spawn()
+{
+	Balloon *balloon = pool_.Create();
+	if( balloon == nullptr ) return nullptr;
+	balloon->Init( spawned_++, radius_ );
+	return balloon;
+}
+
+bool BalloonSet::Remove( Balloon *balloon )
+{
+	return pool_.Destroy( balloon );
 }
 
 int BalloonSet::Update( float playerX, float playerY, float playerZ, float playerDia, int playerState )
 {
 	int attached = 0;
-	for( int i = 0; i < count_; ++i ){
-		if( balloons_[i].Update( playerX, playerY, playerZ, playerDia, playerState ) ){
+	pool_.ForEach( [&]( Balloon &balloon ){
+		if( balloon.Update( playerX, playerY, playerZ, playerDia, playerState ) ){
 			++attached;
 		}
-	}
+	} );
 	return attached;
 }
 
 void BalloonSet::Draw( float playerX, float playerY, float playerZ, int playerState ) const
 {
-	for( int i = 0; i < count_; ++i ){
-		balloons_[i].Draw();
-		balloons_[i].DrawString( playerX, playerY, playerZ, playerState );
-	}
+	pool_.ForEach( [&]( const Balloon &balloon ){
+		balloon.Draw();
+		balloon.DrawString( playerX, playerY, playerZ, playerState );
+	} );
 }

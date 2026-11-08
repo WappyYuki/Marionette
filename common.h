@@ -1,12 +1,10 @@
-// sim.cpp
-void InitScene( void );
-void UpdateScene( void );
+class InGamePlay;
 
 // draw.cpp
-void DrawScene( void );
+void DrawScene( InGamePlay &game );
 
 // projview.cpp
-void Viewing( void );
+void Viewing( const InGamePlay &game );
 void Projection( void );
 
 
@@ -36,7 +34,7 @@ typedef struct {
 	ObjDataT camera0; //カメラ0オブジェクト(主観視点）
 	ObjDataT camera1; //カメラ1オブジェクト(客観視点）
 	ObjDataT camera;
-	ObjDataT player;
+	// プレイヤーは Player クラス（player.h）に移した
 
 	float move; //カメラの移動量
 	float rot; //カメラの回転量
@@ -48,15 +46,6 @@ typedef struct {
 
 	float mouse_x; //正規化されたマウスのX座標[-1.0, 1.0](右側が正)
 	float mouse_y; //正規化されたマウスのY座標[-1.0, 1.0](左側が正)
-
-	
-
-	int ballooncount;     //風船の数の計算
-	int player_state;   //プレイヤーのy軸の位置
-	float player_dia;  //プレイヤーオブジェクトの直径
-	
-
-
 
 	////////
 } SimDataT;

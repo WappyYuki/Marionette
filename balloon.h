@@ -1,9 +1,9 @@
 /******************************************************************************
  * balloon.h: 風船のデータと描画
  *
- * BalloonSet は memsys のアリーナから Create() で確保する。
- * アリーナはデストラクタを呼ばないので、Balloon・BalloonSet とも
- * デストラクタが不要な型（値のメンバーだけ）にしている。 */
+ * BalloonSet は memsys のアリーナから Create() で確保し、風船そのものは
+ * BalloonSet が持つ ObjectPool<Balloon> に置く。風船は Remove() で個別に削除でき、
+ * 空いた枠は次の Spawn() で使い回す。 */
 #ifndef __BALLOON_H__
 #define __BALLOON_H__
 
@@ -38,8 +38,19 @@ private:
 //-------- 風船全体
 class BalloonSet {
 public:
-    // arena から BalloonSet と count 個の Balloon を確保して初期化する。失敗したら nullptr
-    static BalloonSet *Create( memsys::Arena &arena, int count, float radius );
+    // BalloonSet 自体を arena に、capacity 個分の風船の枠を poolArena に確保し、
+    // count 個の風船を置く。失敗したら nullptr
+    static BalloonSet *Create( memsys::Arena &arena, memsys::Arena &poolArena,
+                               int capacity, int count, float radius );
+
+    // 風船を1個増やす。枠が空いていなければ nullptr
+    Balloon *Spawn();
+
+    // 風船を1個削除する（デストラクタを呼び、枠を空ける）。この集合のものでなければ false
+    bool Remove( Balloon *balloon );
+
+    // 全ての風船を削除する（終了時）
+    void RemoveAll() { pool_.DestroyAll(); }
 
     // 全ての風船を更新し、今回くっついた個数を返す
     int Update( float playerX, float playerY, float playerZ, float playerDia, int playerState );
@@ -47,12 +58,19 @@ public:
     // 全ての風船と糸を描く
     void Draw( float playerX, float playerY, float playerZ, int playerState ) const;
 
-    int Count() const { return count_; }
-    const Balloon &Get( int index ) const { return balloons_[index]; }
+    // 生きている風船を回る。f の中で今の風船を Remove してよい
+    template<class F>
+    void ForEach( F &&f ) { pool_.ForEach( std::forward<F>( f ) ); }
+    template<class F>
+    void ForEach( F &&f ) const { pool_.ForEach( std::forward<F>( f ) ); }
+
+    int Count() const { return static_cast<int>( pool_.Count() ); }
+    int Capacity() const { return static_cast<int>( pool_.Capacity() ); }
 
 private:
-    Balloon *balloons_ = nullptr; // 同じアリーナに確保した配列
-    int count_ = 0;
+    memsys::ObjectPool<Balloon> pool_; // 風船の枠（poolArena に確保）
+    float radius_ = 0.0f;
+    int spawned_ = 0; // これまでに作った数（姿勢の初期値に使う）
 };
 
 #endif

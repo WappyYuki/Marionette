@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ゲームコンテンツを書く C# プロジェクト。
+    ビルドした IL（GameContent.dll）を後で C++ に変換して Marionette に組み込む予定なので、
+    変換しやすいよう、暗黙の using や実行環境に依存する機能は増やさない設定にしている。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GameContent</RootNamespace>
+    <AssemblyName>GameContent</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <!-- 使う名前空間をソースに明示し、IL が依存する範囲を見えるようにする -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- カルチャ依存のデータ（ICU）を使わない -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+</Project>

@@ -6,11 +6,10 @@
 #include "ezUtil.h"
 
 #include "common.h"
-#include "balloon.h"
+#include "ingameplay.h"
 
 extern WindowDataT window;
 extern SimDataT simdata;
-extern BalloonSet *balloons;
 
 //-------- prototypes for user functions
 void setLightMain( void );
@@ -119,26 +118,10 @@ void drawWireCube( void )
     shapes::WireCube( 1.0 );
     return;
 }
-/*------------------------------------------------------------------ drawObj
- * drawSolidCube:
- *--------*/
-void drawSolidCube( void )
-{
-	glPushMatrix();
-	{
-		glTranslatef( 0.0, 0.0, 0.0 ); //オブジェクト基準位置調整
-		glRotatef( 0.0, 0.0, 1.0, 0.0 ); //オブジェクト基準姿勢調整：ヨー角
-		glRotatef( 0.0, 1.0, 0.0, 0.0 ); //オブジェクト基準姿勢調整：ピッチ角
-		glRotatef( 0.0, 0.0, 0.0, 1.0 ); //オブジェクト基準姿勢調整：ロール角
-		shapes::SolidCube( simdata.player_dia );
-	}
-	glPopMatrix();
-    return;
-}
 /*---------------------------------------------------------------- DrawScene
  * DrawScene:
  *--------*/
-void DrawScene( void )
+void DrawScene( InGamePlay &game )
 {
 	glDisable( GL_LIGHTING ); //一旦光源オフ
 	//XZ平面上のグリッドの描画
@@ -163,32 +146,8 @@ void DrawScene( void )
 
 	
 
-	glPushMatrix(); //// playerの位置にオブジェクトを描く
-	{
-		glTranslatef( simdata.player.x, simdata.player.y, simdata.player.z ); //オブジェクト位置
-		glRotatef( simdata.player.yaw, 0.0, 1.0, 0.0 ); //オブジェクト回転：ヨー角
-		glRotatef( simdata.player.pitch, 1.0, 0.0, 0.0 ); //オブジェクト回転：ピッチ角
-		glRotatef( simdata.player.roll, 0.0, 0.0, 1.0 ); //オブジェクト回転：ロール角
-		
-
-		if(simdata.camera.state ==0){
-			simdata.player.x = simdata.camera0.x;
-			simdata.player.y = simdata.camera0.y;
-			simdata.player.z = simdata.camera0.z;
-		}
-
-
-
-
-        setMaterialRedPlastic();
-		drawSolidCube();
-	}
-	glPopMatrix();
-
-
-	
-	//風船と糸
-	balloons->Draw( simdata.player.x, simdata.player.y, simdata.player.z, simdata.player_state );
+	//// インゲームの物（プレイヤー・風船など）を描く
+	game.Draw();
 
 	
 

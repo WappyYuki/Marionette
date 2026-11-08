@@ -17,6 +17,7 @@ namespace memsys {
         std::size_t pageSize = 0;
 
         Arena frameArena;
+        Arena poolArena;
         Arena persistentArena;
 
         std::size_t alignUp( std::size_t value, std::size_t align )
@@ -90,6 +91,75 @@ namespace memsys {
         return true;
     }
 
+    //------------------------------------------------------------------------- Pool
+    bool Pool::Init( Arena &arena, std::size_t slotSize, std::size_t slotAlign, std::size_t capacity )
+    {
+        if( !isPowerOfTwo( slotAlign ) ) return false;
+        // 空き枠には次の空き枠へのポインタを書くので、その大きさと境界は確保する
+        if( slotAlign < alignof( void * ) ) slotAlign = alignof( void * );
+        if( slotSize < sizeof( void * ) ) slotSize = sizeof( void * );
+        slotSize = alignUp( slotSize, slotAlign );
+        if( capacity > 0 && slotSize > static_cast<std::size_t>( -1 ) / capacity ) return false;
+
+        char *slots = static_cast<char *>( arena.Allocate( slotSize * capacity, slotAlign ) );
+        bool *used = NewArray<bool>( arena, capacity );
+        if( slots == nullptr || used == nullptr ) return false;
+
+        slots_ = slots;
+        used_ = used;
+        slotSize_ = slotSize;
+        capacity_ = capacity;
+        count_ = 0;
+
+        // 先頭の枠から順に使われるよう、後ろからつなぐ
+        freeList_ = nullptr;
+        for( std::size_t i = capacity; i > 0; --i ){
+            void *slot = Slot( i - 1 );
+            *static_cast<void **>( slot ) = freeList_;
+            freeList_ = slot;
+        }
+        return true;
+    }
+
+    void *Pool::Allocate()
+    {
+        if( freeList_ == nullptr ) return nullptr;
+
+        char *slot = static_cast<char *>( freeList_ );
+        freeList_ = *reinterpret_cast<void **>( slot );
+        used_[( slot - slots_ ) / slotSize_] = true;
+        ++count_;
+        return slot;
+    }
+
+    bool Pool::Free( void *p )
+    {
+        const std::size_t index = slotIndex( p );
+        if( index == kInvalid ){
+            std::fprintf( stderr, "memsys: pool: free of unknown or already freed pointer %p\n", p );
+            return false;
+        }
+        used_[index] = false;
+        --count_;
+#ifdef _DEBUG
+        // 解放後の枠を読むとすぐ分かるよう、目立つ値で埋める
+        std::memset( p, 0xDD, slotSize_ );
+#endif
+        *static_cast<void **>( p ) = freeList_;
+        freeList_ = p;
+        return true;
+    }
+
+    std::size_t Pool::slotIndex( const void *p ) const
+    {
+        const char *c = static_cast<const char *>( p );
+        if( slots_ == nullptr || c < slots_ || c >= slots_ + slotSize_ * capacity_ ) return kInvalid;
+        const std::size_t offset = static_cast<std::size_t>( c - slots_ );
+        if( offset % slotSize_ != 0 ) return kInvalid;
+        const std::size_t index = offset / slotSize_;
+        return used_[index] ? index : kInvalid;
+    }
+
     //-------------------------------------------------------------------- 全体の管理
     bool Init( const Config &config )
     {
@@ -100,11 +170,12 @@ namespace memsys {
         pageSize = info.dwPageSize;
 
         const std::size_t frameSize = alignUp( config.frameSize, pageSize );
+        const std::size_t poolSize = alignUp( config.poolSize, pageSize );
         const std::size_t commitStep = alignUp( config.commitStep > 0 ? config.commitStep : pageSize, pageSize );
         regionSize = alignUp( config.reserveSize, info.dwAllocationGranularity );
-        if( frameSize >= regionSize ){
-            std::fprintf( stderr, "memsys: frameSize (%zu) must be smaller than reserveSize (%zu)\n",
-                          frameSize, regionSize );
+        if( frameSize >= regionSize || poolSize >= regionSize - frameSize ){
+            std::fprintf( stderr, "memsys: frameSize (%zu) + poolSize (%zu) must be smaller than reserveSize (%zu)\n",
+                          frameSize, poolSize, regionSize );
             return false;
         }
 
@@ -116,7 +187,9 @@ namespace memsys {
 
         const bool ok =
             frameArena.Init( "frame", regionBase, frameSize, frameSize, commitStep ) &&
-            persistentArena.Init( "persistent", regionBase + frameSize, regionSize - frameSize,
+            poolArena.Init( "pool", regionBase + frameSize, poolSize, 0, commitStep ) &&
+            persistentArena.Init( "persistent", regionBase + frameSize + poolSize,
+                                  regionSize - frameSize - poolSize,
                                   alignUp( config.initialCommit, pageSize ), commitStep );
         if( !ok ){
             Shutdown();
@@ -132,11 +205,13 @@ namespace memsys {
         regionBase = nullptr;
         regionSize = 0;
         frameArena = Arena();
+        poolArena = Arena();
         persistentArena = Arena();
     }
 
     Arena &Persistent() { return persistentArena; }
     Arena &Frame() { return frameArena; }
+    Arena &PoolHeap() { return poolArena; }
 
     void BeginFrame()
     {
@@ -146,7 +221,7 @@ namespace memsys {
     void PrintStats()
     {
         std::printf( "memsys: reserved %zu MiB at %p\n", regionSize / MiB, static_cast<void *>( regionBase ) );
-        for( const Arena *arena : { &frameArena, &persistentArena } ){
+        for( const Arena *arena : { &frameArena, &poolArena, &persistentArena } ){
             std::printf( "memsys:   %-10s used %zu KiB (peak %zu KiB) / committed %zu KiB / reserved %zu KiB\n",
                          arena->Name(), arena->Used() / KiB, arena->Peak() / KiB,
                          arena->Committed() / KiB, arena->Reserved() / KiB );

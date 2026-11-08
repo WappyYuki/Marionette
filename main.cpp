@@ -10,6 +10,7 @@
 #include "inputsys.h"
 #include "memsys.h"
 
+#include "balloongame.h"
 #include "common.h"
 
 //-------- callback functions
@@ -30,6 +31,10 @@ constexpr char kWindowClass[] = "MarionetteWindow";
 HWND hwnd = nullptr;
 HDC hdc = nullptr;
 HGLRC glContext = nullptr;
+
+// 動かすインゲーム。枠は memsys のプールヒープから切り出す
+memsys::ObjectPool<BalloonGame> gamePool;
+InGamePlay *game = nullptr;
 
 UINT originalConsoleOutputCP = 0;
 
@@ -101,7 +106,7 @@ void update( void )
 {
 	time = static_cast<int>( GetTickCount64() );
 
-    UpdateScene();
+    game->Update();
 
 	return;
 }
@@ -127,13 +132,13 @@ void display( void )
 	//-------- viewing transformation --------
     glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
-    Viewing();
+    Viewing( *game );
 
     //-------- draw --------
 	glEnable( GL_DEPTH_TEST ); // ---- begin:
     glEnable( GL_LIGHTING );
 	glPushMatrix();
-    DrawScene();
+    DrawScene( *game );
 	glPopMatrix();
     glDisable( GL_LIGHTING );
     glDisable( GL_DEPTH_TEST );
@@ -242,8 +247,9 @@ int main( int argc, char *argv[] )
 	memsys::Config memConfig;
 	memConfig.reserveSize   = 1 * memsys::GiB;  // 予約するアドレス空間の総量
 	memConfig.frameSize     = 16 * memsys::MiB; // 毎フレーム空になる領域
+	memConfig.poolSize      = 64 * memsys::MiB; // プール（プレイヤー・風船など）の枠を切り出す領域
 	memConfig.initialCommit = 64 * memsys::MiB; // 常駐領域のうち起動時にコミットする量
-	memConfig.commitStep    = 1 * memsys::MiB;  // 常駐領域が足りない時に追加する単位
+	memConfig.commitStep    = 1 * memsys::MiB;  // プールヒープ・常駐領域が足りない時に追加する単位
 	////////////////
 
 	if( !memsys::Init( memConfig ) ) return 1;
@@ -261,7 +267,17 @@ int main( int argc, char *argv[] )
 
     printf( "[H]:Help\n" );     // indicate help instruction
 
-    InitScene();
+	//-------- インゲームを作って始める
+	if( !gamePool.Init( memsys::PoolHeap(), 1 ) || ( game = gamePool.Create() ) == nullptr ){
+		std::fprintf( stderr, "インゲームのメモリを確保できませんでした\n" );
+		shutdownWindow();
+		return 1;
+	}
+	if( !game->Start() ){
+		gamePool.DestroyAll();
+		shutdownWindow();
+		return 1;
+	}
 
 	time = static_cast<int>( GetTickCount64() );
 
@@ -274,7 +290,7 @@ int main( int argc, char *argv[] )
 			TranslateMessage( &msg );
 			DispatchMessageA( &msg );
 		}
-		if( !running ) break;
+		if( !running || game->IsFinished() ) break; // ルール上の終わりでも抜ける
 
 		memsys::BeginFrame(); // 前のフレームの一時確保を捨てる
 		inputsys::Poll(); // キーボード・マウスのコールバックはここから呼ばれる
@@ -282,6 +298,10 @@ int main( int argc, char *argv[] )
 		display();
 	}
 
+	// インゲームを終えて片付ける（風船などのデストラクタを、memsys を閉じる前に呼ぶ）
+	game->Finish();
+	gamePool.DestroyAll();
+	game = nullptr;
 	inputsys::Shutdown();
 	shutdownWindow();
 

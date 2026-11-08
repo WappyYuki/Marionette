@@ -1,6 +1,6 @@
 root = true
 
-# ソースは UTF-8（BOM なし）・CRLF で保存する
-[*.{cpp,h}]
+# ソース（C++・C#）は UTF-8（BOM なし）・CRLF で保存する
+[*.{cpp,h,cs}]
 charset = utf-8
 end_of_line = crlf

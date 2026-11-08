@@ -3,6 +3,7 @@
 #include "glheaders.h"
 
 #include "common.h"
+#include "ingameplay.h"
 
 extern SimDataT simdata;
 extern WindowDataT window;
@@ -10,8 +11,8 @@ extern WindowDataT window;
 /*---------------------------------------------------------------- Viewing
  * Viewing:
  *--------*/
-void Viewing( void )
-{  
+void Viewing( const InGamePlay &game )
+{
 	///// カメラ操作（位置と向き）
 	///// ビューイング変換
 
@@ -28,9 +29,13 @@ void Viewing( void )
 			// (x,y,z)の平行移動の逆変換
 			break;
 
-		case 1:
-			gluLookAt( 0.0,  5.0, 8.0,simdata.player.x, simdata.player.y, simdata.player.z,0.0, 1.0, 0.0 );
+		case 1: {
+			// 客観視点はインゲームが決める注目点（風船ゲームではプレイヤー）を見る
+			float tx, ty, tz;
+			game.GetViewTarget( tx, ty, tz );
+			gluLookAt( 0.0,  5.0, 8.0, tx, ty, tz, 0.0, 1.0, 0.0 );
 			break;
+		}
 	}
 }
 
